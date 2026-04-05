@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NovaDrive.Api/NovaDrive.Api.csproj" />
+    <Project Path="src/NovaDrive.Application/NovaDrive.Application.csproj" />
+    <Project Path="src/NovaDrive.Domain/NovaDrive.Domain.csproj" />
+    <Project Path="src/NovaDrive.GraphQL/NovaDrive.GraphQL.csproj" />
+    <Project Path="src/NovaDrive.Infrastructure/NovaDrive.Infrastructure.csproj" />
+    <Project Path="src/NovaDrive.Simulator/NovaDrive.Simulator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NovaDrive.IntegrationTests/NovaDrive.IntegrationTests.csproj" />
+    <Project Path="tests/NovaDrive.UnitTests/NovaDrive.UnitTests.csproj" />
+  </Folder>
+</Solution>
