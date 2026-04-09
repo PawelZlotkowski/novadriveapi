@@ -4,6 +4,7 @@
     <ProjectReference Include="..\NovaDrive.Application\NovaDrive.Application.csproj" />
     <ProjectReference Include="..\NovaDrive.Infrastructure\NovaDrive.Infrastructure.csproj" />
     <ProjectReference Include="..\NovaDrive.GraphQL\NovaDrive.GraphQL.csproj" />
+    <ProjectReference Include="..\NovaDrive.Application\NovaDrive.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
