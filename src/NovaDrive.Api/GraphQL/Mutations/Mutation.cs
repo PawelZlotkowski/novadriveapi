@@ -11,12 +11,12 @@ public class Mutation
 {
     [Authorize(Policy = "AdminPolicy")]
     public async Task<VehicleResponse> CreateVehicle(
-        [Service] IVehicleService service, CreateVehicleRequest input)
+        IVehicleService service, CreateVehicleRequest input)
         => await service.CreateAsync(input);
 
     [Authorize(Policy = "AdminPolicy")]
     public async Task<SupportTicketResponse> UpdateTicketStatus(
-        [Service] ISupportTicketService service,
+        ISupportTicketService service,
         Guid id, string status, string? adminNotes)
     {
         var ticketStatus = Enum.Parse<TicketStatus>(status);
@@ -25,6 +25,6 @@ public class Mutation
 
     [Authorize(Policy = "AdminPolicy")]
     public async Task<DiscountCodeResponse> CreateDiscountCode(
-        [Service] IDiscountCodeService service, CreateDiscountCodeRequest input)
+        IDiscountCodeService service, CreateDiscountCodeRequest input)
         => await service.CreateAsync(input);
 }
