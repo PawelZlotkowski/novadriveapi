@@ -1,0 +1,86 @@
+# docker-compose.yml
+
+services:
+  # ── Databases ──
+  postgres:
+    image: postgres:16
+    container_name: novadrive-postgres
+    environment:
+      POSTGRES_DB: novadrive
+      POSTGRES_USER: novadrive
+      POSTGRES_PASSWORD: novadrive123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novadrive"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: novadrive-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Logging ──
+  seq:
+    image: datalust/seq:latest
+    container_name: novadrive-seq
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "5341:5341"
+      - "8081:80"
+
+  # ── API ──
+  nova-api:
+    build:
+      context: .
+      dockerfile: NovaDrive.Api/Dockerfile
+    container_name: novadrive-api
+    ports:
+      - "5050:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PostgreSql: "Host=postgres;Port=5432;Database=novadrive;Username=novadrive;Password=novadrive123"
+      ConnectionStrings__MongoDb: "mongodb://mongodb:27017"
+      MongoDb__DatabaseName: "novadrive"
+      Seq__Url: "http://seq:5341"
+      Auth0__Authority: "https://YOUR_TENANT.auth0.com/"
+      Auth0__Audience: "https://api.novadrive.com"
+      ApiKeys__VehicleSystem: "nd-vehicle-key-change-me-in-production"
+      Cors__DashboardUrl: "http://localhost:3000"
+      Cors__PassengerUrl: "http://localhost:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      seq:
+        condition: service_started
+
+  # ── Simulator ──
+  nova-simulator:
+    build:
+      context: .
+      dockerfile: NovaDrive.Simulator/Dockerfile
+    container_name: novadrive-simulator
+    command: ["mongodb://mongodb:27017", "http://nova-api:8080", "nd-vehicle-key-change-me-in-production"]
+    depends_on:
+      nova-api:
+        condition: service_started
+    restart: "no"
+
+volumes:
+  postgres_data:
+  mongo_data:
