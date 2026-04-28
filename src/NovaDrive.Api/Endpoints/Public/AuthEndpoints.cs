@@ -15,10 +15,14 @@ public static class AuthEndpoints
             IUserRepository userRepo) =>
         {
             var auth0Id = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var email = context.User.FindFirst("email")?.Value ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (auth0Id is null)
+                return Results.BadRequest(new { message = "Token must contain sub claim" });
 
-            if (auth0Id is null || email is null)
-                return Results.BadRequest(new { message = "Token must contain sub and email claims" });
+            // Auth0 access tokens don't include email by default (only ID tokens do).
+            // Fall back to a synthetic address so sync doesn't fail for real users.
+            var email = context.User.FindFirst("email")?.Value
+                     ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                     ?? $"{auth0Id.Replace("|", ".")}@novadrive.app";
 
             var existingUser = await userRepo.GetByAuth0IdAsync(auth0Id);
             if (existingUser is not null)

@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:5050
+@passengerToken = <paste_passenger_jwt_here>
+@adminToken = <paste_admin_jwt_here>
+
+### Get passenger payment history
+GET {{baseUrl}}/api/public/payments/history
+Authorization: Bearer {{passengerToken}}
+
+### Get single payment
+GET {{baseUrl}}/api/public/payments/<payment-id>
+Authorization: Bearer {{passengerToken}}
+
+### List all payments (admin)
+GET {{baseUrl}}/api/admin/payments?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}

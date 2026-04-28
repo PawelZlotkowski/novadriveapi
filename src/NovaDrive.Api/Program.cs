@@ -83,8 +83,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreatePassengerRequestValid
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Auth0:Authority"];       // https://YOUR_DOMAIN.auth0.com/
-        options.Audience = builder.Configuration["Auth0:Audience"];         // https://api.novadrive.com
+        options.Authority = builder.Configuration["Auth0:Authority"];
+        options.Audience  = builder.Configuration["Auth0:Audience"];
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -131,7 +131,7 @@ builder.Services
     .AddAuthorization();
 
 // ──────────────────────────────────────
-// SWAGGER / OPENAPI (optional, helpful for testing)
+// SWAGGER / OPENAPI
 // ──────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -161,6 +161,7 @@ var app = builder.Build();
 // MIDDLEWARE PIPELINE
 // ──────────────────────────────────────
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseSerilogRequestLogging();
 
@@ -172,6 +173,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
+app.UseMiddleware<UserEnrichmentMiddleware>();
 app.UseAuthorization();
 
 // ──────────────────────────────────────
@@ -207,13 +209,21 @@ app.MapGroup("/api/vehicle").MapVehicleSystemEndpoints();
 app.MapGraphQL("/graphql");
 
 // ──────────────────────────────────────
-// AUTO-MIGRATE DATABASE ON STARTUP (dev only)
+// HEALTH CHECK (used by Docker healthcheck + load balancers)
 // ──────────────────────────────────────
-if (app.Environment.IsDevelopment())
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+   .AllowAnonymous()
+   .ExcludeFromDescription();
+
+// ──────────────────────────────────────
+// DATABASE INIT ON STARTUP
+// ──────────────────────────────────────
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NovaDriveDbContext>();
     await db.Database.MigrateAsync();
+    if (app.Environment.IsDevelopment())
+        await NovaDrive.Infrastructure.Persistence.DataSeeder.SeedAsync(db);
 }
 
 app.Run();

@@ -1,5 +1,4 @@
-﻿// Simulator/Program.cs
-using NovaDrive.Simulator;
+﻿using NovaDrive.Simulator;
 
 Console.WriteLine("=== Nova Drive Vehicle Simulator ===");
 Console.WriteLine("Generating telemetry and sensor data...\n");
@@ -17,4 +16,4 @@ var apiKey = args.Length > 2
     : "nd-vehicle-key-change-me-in-production";
 
 var simulator = new VehicleSimulator(mongoConnectionString, apiBaseUrl, apiKey);
-await simulator.RunAsync(vehicleCount: 10, durationSeconds: 300, intervalMs: 5000);
+await simulator.RunAsync(intervalMs: 2000);

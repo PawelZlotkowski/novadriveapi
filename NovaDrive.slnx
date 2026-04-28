@@ -3,7 +3,6 @@
     <Project Path="src/NovaDrive.Api/NovaDrive.Api.csproj" />
     <Project Path="src/NovaDrive.Application/NovaDrive.Application.csproj" />
     <Project Path="src/NovaDrive.Domain/NovaDrive.Domain.csproj" />
-    <Project Path="src/NovaDrive.GraphQL/NovaDrive.GraphQL.csproj" />
     <Project Path="src/NovaDrive.Infrastructure/NovaDrive.Infrastructure.csproj" />
     <Project Path="src/NovaDrive.Simulator/NovaDrive.Simulator.csproj" />
   </Folder>

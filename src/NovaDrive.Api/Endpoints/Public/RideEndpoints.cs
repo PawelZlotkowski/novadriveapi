@@ -104,6 +104,37 @@ public static class RideEndpoints
         .RequireAuthorization("PassengerPolicy")
         .WithTags("Invoices");
 
+        // GET /api/public/rides/active/vehicle-position
+        // Returns the latest telemetry for the vehicle assigned to the passenger's active ride
+        group.MapGet("/active/vehicle-position", async (
+            HttpContext context,
+            IRideService rideService,
+            IPassengerService passengerService,
+            ITelemetryService telemetryService) =>
+        {
+            var userId = context.User.GetUserId();
+            var passenger = await passengerService.GetByUserIdAsync(userId);
+            var ride = await rideService.GetActiveRideAsync(passenger.Id);
+            if (ride is null || ride.VehicleId is null)
+                return Results.NotFound(new { message = "No active ride with vehicle assigned" });
+
+            var telemetry = await telemetryService.GetLatestAsync(ride.VehicleId.Value);
+            if (telemetry is null)
+                return Results.NotFound(new { message = "No telemetry available yet" });
+
+            return Results.Ok(new
+            {
+                latitude         = telemetry.Latitude,
+                longitude        = telemetry.Longitude,
+                speedKmh         = telemetry.SpeedKmh,
+                batteryPct       = telemetry.BatteryPercentage,
+                timestamp        = telemetry.Timestamp,
+                rideStatus       = ride.Status,
+            });
+        })
+        .RequireAuthorization("PassengerPolicy")
+        .WithTags("Rides");
+
         return group;
     }
 }

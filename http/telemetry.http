@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:5050
+@adminToken = <paste_admin_jwt_here>
+@vehicleApiKey = nd-vehicle-key-change-me-in-production
+@vehicleId = <paste-vehicle-guid-here>
+
+### ── Vehicle system — POST telemetry ────────────────────────────────────
+
+### Record single telemetry point
+POST {{baseUrl}}/api/vehicle/telemetry
+X-Api-Key: {{vehicleApiKey}}
+Content-Type: application/json
+
+{
+  "vehicleId": "{{vehicleId}}",
+  "latitude": 52.2297,
+  "longitude": 21.0122,
+  "speedKmh": 42.5,
+  "batteryPercentage": 78.3,
+  "hardwareTemperatureCelsius": 38.1
+}
+
+### Record batch telemetry
+POST {{baseUrl}}/api/vehicle/telemetry/batch
+X-Api-Key: {{vehicleApiKey}}
+Content-Type: application/json
+
+[
+  {
+    "vehicleId": "{{vehicleId}}",
+    "latitude": 52.2310,
+    "longitude": 21.0140,
+    "speedKmh": 35.0,
+    "batteryPercentage": 77.9,
+    "hardwareTemperatureCelsius": 38.2
+  },
+  {
+    "vehicleId": "{{vehicleId}}",
+    "latitude": 52.2325,
+    "longitude": 21.0158,
+    "speedKmh": 28.0,
+    "batteryPercentage": 77.6,
+    "hardwareTemperatureCelsius": 38.4
+  }
+]
+
+### Record sensor diagnostic
+POST {{baseUrl}}/api/vehicle/diagnostics
+X-Api-Key: {{vehicleApiKey}}
+Content-Type: application/json
+
+{
+  "vehicleId": "{{vehicleId}}",
+  "sensorType": "Lidar",
+  "errorCode": "LIDAR_RETURN_LOW",
+  "severity": "Warning",
+  "rawSensorData": { "returnStrength": 12, "expectedMin": 20, "azimuth": 45.3 }
+}
+
+### ── Admin — GET telemetry ───────────────────────────────────────────────
+
+### Latest telemetry for a vehicle
+GET {{baseUrl}}/api/admin/telemetry/{{vehicleId}}/latest
+Authorization: Bearer {{adminToken}}
+
+### Telemetry history for a vehicle (time range)
+GET {{baseUrl}}/api/admin/telemetry/{{vehicleId}}?from=2025-01-01T00:00:00Z&to=2026-12-31T23:59:59Z
+Authorization: Bearer {{adminToken}}

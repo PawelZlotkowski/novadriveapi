@@ -1,66 +1,87 @@
-# docker-compose.yml
+# ⚠  This file has been superseded.
+# The canonical compose file is now at the project root: ../compose.yaml
+# Run from the project root: docker compose up --build
+#
+# This file is kept for reference only and is no longer maintained.
+
+x-restart: &restart
+  restart: unless-stopped
 
 services:
-  # ── Databases ──
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: novadrive-postgres
+    env_file: .env
     environment:
-      POSTGRES_DB: novadrive
-      POSTGRES_USER: novadrive
-      POSTGRES_PASSWORD: novadrive123
-    ports:
-      - "5433:5432"
+      POSTGRES_DB:       novadrive
+      POSTGRES_USER:     novadrive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-novadrive123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U novadrive"]
+      test: ["CMD-SHELL", "pg_isready -U novadrive -d novadrive"]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks: [novadrive]
+    <<: *restart
 
+  # ── MongoDB ───────────────────────────────────────────────────────────────
   mongodb:
     image: mongo:7
     container_name: novadrive-mongo
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks: [novadrive]
+    <<: *restart
 
-  # ── Logging ──
+  # ── Seq (structured logging UI) ───────────────────────────────────────────
   seq:
-    image: datalust/seq:latest
+    image: datalust/seq:2024.3
     container_name: novadrive-seq
     environment:
       ACCEPT_EULA: "Y"
     ports:
-      - "5341:5341"
-      - "8081:80"
+      - "8081:80"   # Seq UI  → http://localhost:8081
+    volumes:
+      - seq_data:/data
+    networks: [novadrive]
+    <<: *restart
 
-  # ── API ──
+  # ── API ───────────────────────────────────────────────────────────────────
   nova-api:
     build:
       context: .
       dockerfile: NovaDrive.Api/Dockerfile
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache/nova-api
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache/nova-api,mode=max
+    image: novadrive/api:local
     container_name: novadrive-api
     ports:
-      - "5050:8080"
+      - "5050:8080"   # API → http://localhost:5050
+    env_file: .env
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__PostgreSql: "Host=postgres;Port=5432;Database=novadrive;Username=novadrive;Password=novadrive123"
-      ConnectionStrings__MongoDb: "mongodb://mongodb:27017"
-      MongoDb__DatabaseName: "novadrive"
-      Seq__Url: "http://seq:5341"
-      Auth0__Authority: "https://YOUR_TENANT.auth0.com/"
-      Auth0__Audience: "https://api.novadrive.com"
-      ApiKeys__VehicleSystem: "nd-vehicle-key-change-me-in-production"
-      Cors__DashboardUrl: "http://localhost:3000"
-      Cors__PassengerUrl: "http://localhost:3001"
+      ASPNETCORE_ENVIRONMENT:       Development
+      ASPNETCORE_URLS:              http://+:8080
+      ConnectionStrings__PostgreSql: "Host=postgres;Port=5432;Database=novadrive;Username=novadrive;Password=${POSTGRES_PASSWORD:-novadrive123}"
+      ConnectionStrings__MongoDb:   "mongodb://mongodb:27017"
+      MongoDb__DatabaseName:        novadrive
+      Seq__Url:                     http://seq:5341
+      Auth0__Authority:             ${AUTH0_AUTHORITY:-https://dev-zry671atuev7zvx2.us.auth0.com/}
+      Auth0__Audience:              ${AUTH0_AUDIENCE:-https://api.novadrive.com}
+      ApiKeys__VehicleSystem:       ${VEHICLE_API_KEY:-nd-vehicle-key-change-me-in-production}
+      Cors__DashboardUrl:           http://localhost:3000
+      Cors__PassengerUrl:           http://localhost:3001
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,19 +89,83 @@ services:
         condition: service_healthy
       seq:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [novadrive]
+    <<: *restart
 
-  # ── Simulator ──
+  # ── Simulator ─────────────────────────────────────────────────────────────
   nova-simulator:
     build:
       context: .
       dockerfile: NovaDrive.Simulator/Dockerfile
+    image: novadrive/simulator:local
     container_name: novadrive-simulator
-    command: ["mongodb://mongodb:27017", "http://nova-api:8080", "nd-vehicle-key-change-me-in-production"]
+    command:
+      - "mongodb://mongodb:27017"
+      - "http://nova-api:8080"
+      - "${VEHICLE_API_KEY:-nd-vehicle-key-change-me-in-production}"
     depends_on:
       nova-api:
-        condition: service_started
-    restart: "no"
+        condition: service_healthy
+    networks: [novadrive]
+    restart: on-failure
+
+  # ── Admin Dashboard (nginx) ───────────────────────────────────────────────
+  nova-admin:
+    build:
+      context: ../dotnet-handoff/client
+      dockerfile: Dockerfile.admin
+      args:
+        VITE_API_BASE_URL:          ""
+        VITE_AUTH0_DOMAIN:          ${VITE_AUTH0_DOMAIN}
+        VITE_AUTH0_ADMIN_CLIENT_ID: ${VITE_AUTH0_ADMIN_CLIENT_ID}
+        VITE_AUTH0_AUDIENCE:        ${VITE_AUTH0_AUDIENCE}
+        VITE_MAPBOX_TOKEN:          ${VITE_MAPBOX_TOKEN}
+    image: novadrive/admin:local
+    container_name: novadrive-admin
+    ports:
+      - "3000:8080"   # Admin UI → http://localhost:3000
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks: [novadrive]
+    <<: *restart
+
+  # ── Passenger App (nginx) ─────────────────────────────────────────────────
+  nova-passenger:
+    build:
+      context: ../dotnet-handoff/client
+      dockerfile: Dockerfile.passenger
+      args:
+        VITE_API_BASE_URL:               ""
+        VITE_AUTH0_DOMAIN:               ${VITE_AUTH0_DOMAIN}
+        VITE_AUTH0_PASSENGER_CLIENT_ID:  ${VITE_AUTH0_PASSENGER_CLIENT_ID}
+        VITE_AUTH0_AUDIENCE:             ${VITE_AUTH0_AUDIENCE}
+        VITE_MAPBOX_TOKEN:               ${VITE_MAPBOX_TOKEN}
+    image: novadrive/passenger:local
+    container_name: novadrive-passenger
+    ports:
+      - "3001:8080"   # Passenger UI → http://localhost:3001
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks: [novadrive]
+    <<: *restart
+
+networks:
+  novadrive:
+    driver: bridge
 
 volumes:
   postgres_data:
   mongo_data:
+  seq_data:

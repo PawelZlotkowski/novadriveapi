@@ -43,13 +43,15 @@ public class TelemetryService : ITelemetryService
 
         await _telemetryRepo.InsertAsync(data);
 
-        // Also update vehicle's current location and battery
-        await _vehicleRepo.UpdateLocationAsync(request.VehicleId, request.Latitude, request.Longitude);
+        // Sync latest position + battery to PostgreSQL for admin view and nearest-vehicle queries
+        await _vehicleRepo.UpdateTelemetryAsync(request.VehicleId, request.Latitude, request.Longitude, request.BatteryPercentage);
     }
 
     public async Task RecordBatchAsync(IEnumerable<CreateTelemetryRequest> requests)
     {
-        var batch = requests.Select(r => new TelemetryData
+        var list = requests.ToList();
+
+        var batch = list.Select(r => new TelemetryData
         {
             VehicleId = r.VehicleId.ToString(),
             Latitude = r.Latitude,
@@ -61,6 +63,10 @@ public class TelemetryService : ITelemetryService
         });
 
         await _telemetryRepo.InsertBatchAsync(batch);
+
+        // Sync latest position + battery to PostgreSQL sequentially (DbContext is not thread-safe)
+        foreach (var r in list)
+            await _vehicleRepo.UpdateTelemetryAsync(r.VehicleId, r.Latitude, r.Longitude, r.BatteryPercentage);
     }
 
     public async Task<IEnumerable<TelemetryResponse>> GetVehicleTelemetryAsync(Guid vehicleId, DateTime from, DateTime to)

@@ -3,12 +3,15 @@
   <ItemGroup>
     <ProjectReference Include="..\NovaDrive.Application\NovaDrive.Application.csproj" />
     <ProjectReference Include="..\NovaDrive.Infrastructure\NovaDrive.Infrastructure.csproj" />
-    <ProjectReference Include="..\NovaDrive.GraphQL\NovaDrive.GraphQL.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="15.1.13" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />

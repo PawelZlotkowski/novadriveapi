@@ -1,0 +1,51 @@
+@baseUrl = http://localhost:5050
+@passengerToken = <paste_passenger_jwt_here>
+@adminToken = <paste_admin_jwt_here>
+
+### ── Passenger ────────────────────────────────────────────────────────────
+
+### Create a support ticket
+POST {{baseUrl}}/api/public/support-tickets
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "rideId": "<ride-id>",
+  "subject": "Incorrect charge",
+  "description": "I was charged more than the estimated price shown before booking.",
+  "priority": "High"
+}
+
+### Get own tickets
+GET {{baseUrl}}/api/public/support-tickets
+Authorization: Bearer {{passengerToken}}
+
+### ── Admin ────────────────────────────────────────────────────────────────
+
+### List all tickets
+GET {{baseUrl}}/api/admin/support-tickets?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Get single ticket
+GET {{baseUrl}}/api/admin/support-tickets/<ticket-id>
+Authorization: Bearer {{adminToken}}
+
+### Update ticket status and admin notes
+PUT {{baseUrl}}/api/admin/support-tickets/<ticket-id>
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "InProgress",
+  "adminNotes": "Investigating the pricing logs for this ride."
+}
+
+### Resolve a ticket
+PUT {{baseUrl}}/api/admin/support-tickets/<ticket-id>
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "Resolved",
+  "adminNotes": "Confirmed overcharge — refund of €5 issued."
+}

@@ -19,6 +19,8 @@ public interface IVehicleRepository
     Task<Vehicle?> GetNearestAvailableAsync(double latitude, double longitude, VehicleType? type = null);
     Task<IEnumerable<Vehicle>> GetActiveVehiclesAsync();
     Task UpdateLocationAsync(Guid id, double latitude, double longitude);
+    Task UpdateTelemetryAsync(Guid id, double latitude, double longitude, double batteryPct);
+    Task AddMileageAsync(Guid id, decimal distanceKm);
 }
 
 public class VehicleRepository : IVehicleRepository
@@ -35,12 +37,10 @@ public class VehicleRepository : IVehicleRepository
             ?? throw new KeyNotFoundException($"Vehicle with ID {id} not found.");
 
     public async Task<Vehicle?> GetByVINAsync(string vin)
-        => await _context.Vehicles.FirstOrDefaultAsync(v => v.VIN == vin)
-            ?? throw new KeyNotFoundException($"Vehicle with VIN {vin} not found.");
+        => await _context.Vehicles.FirstOrDefaultAsync(v => v.VIN == vin);
 
     public async Task<Vehicle?> GetByLicensePlateAsync(string licensePlate)
-        => await _context.Vehicles.FirstOrDefaultAsync(v => v.LicensePlate == licensePlate)
-            ?? throw new KeyNotFoundException($"Vehicle with license plate {licensePlate} not found.");
+        => await _context.Vehicles.FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
 
     public async Task<Vehicle> CreateAsync(Vehicle vehicle)
     {
@@ -126,5 +126,25 @@ public class VehicleRepository : IVehicleRepository
                 .SetProperty(x => x.CurrentLatitude, latitude)
                 .SetProperty(x => x.CurrentLongitude, longitude)
                 .SetProperty(x => x.UpdatedAt, DateTime.UtcNow));
+    }
+
+    public async Task UpdateTelemetryAsync(Guid id, double latitude, double longitude, double batteryPct)
+    {
+        await _context.Vehicles
+            .Where(v => v.Id == id)
+            .ExecuteUpdateAsync(v => v
+                .SetProperty(x => x.CurrentLatitude, latitude)
+                .SetProperty(x => x.CurrentLongitude, longitude)
+                .SetProperty(x => x.CurrentBatteryPercentage, batteryPct)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow));
+    }
+
+    public async Task AddMileageAsync(Guid id, decimal distanceKm)
+    {
+        var vehicle = await _context.Vehicles.FindAsync(id);
+        if (vehicle is null) return;
+        vehicle.CurrentMileage += (int)Math.Round(distanceKm);
+        vehicle.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
     }
 }

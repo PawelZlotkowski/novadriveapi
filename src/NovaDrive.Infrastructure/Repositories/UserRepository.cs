@@ -30,12 +30,10 @@ public class UserRepository : IUserRepository
             ?? throw new KeyNotFoundException($"User with ID {id} not found.");
 
     public async Task<User?> GetByEmailAsync(string email)
-        => await _context.Users.FirstOrDefaultAsync(u => u.Email == email)
-            ?? throw new KeyNotFoundException($"User with email {email} not found.");
+        => await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
     public async Task<User?> GetByAuth0IdAsync(string auth0Id)
-        => await _context.Users.FirstOrDefaultAsync(u => u.Auth0Id == auth0Id)
-            ?? throw new KeyNotFoundException($"User with Auth0 ID {auth0Id} not found.");
+        => await _context.Users.FirstOrDefaultAsync(u => u.Auth0Id == auth0Id);
 
     public async Task<User> CreateAsync(User user)
     {

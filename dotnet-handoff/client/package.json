@@ -1,0 +1,25 @@
+{
+  "name": "nova-drive-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev:passenger": "vite --config vite.passenger.config.ts",
+    "dev:admin":     "vite --config vite.admin.config.ts",
+    "build:passenger": "vite build --config vite.passenger.config.ts",
+    "build:admin":     "vite build --config vite.admin.config.ts"
+  },
+  "dependencies": {
+    "@auth0/auth0-react": "^2.2.4",
+    "mapbox-gl": "^3.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/mapbox-gl": "^3.4.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}

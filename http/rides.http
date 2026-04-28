@@ -1,0 +1,91 @@
+@baseUrl = http://localhost:5050
+@passengerToken = <paste_passenger_jwt_here>
+@adminToken = <paste_admin_jwt_here>
+@vehicleApiKey = nd-vehicle-key-change-me-in-production
+
+### ── Passenger endpoints ──────────────────────────────────────────────────
+
+### Estimate ride price before booking
+POST {{baseUrl}}/api/public/pricing/estimate
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "distanceKm": 10.5,
+  "durationMinutes": 25,
+  "vehicleType": "Standard"
+}
+
+### Estimate with loyalty points and discount code
+POST {{baseUrl}}/api/public/pricing/estimate
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "distanceKm": 10.5,
+  "durationMinutes": 25,
+  "vehicleType": "Luxury",
+  "loyaltyPoints": 300,
+  "discountCode": "SUMMER2025"
+}
+
+### Book a ride
+POST {{baseUrl}}/api/public/rides
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "departureAddress": "Dworzec Centralny, Warszawa",
+  "departureLatitude": 52.2286,
+  "departureLongitude": 21.0031,
+  "destinationAddress": "Lotnisko Chopina, Warszawa",
+  "destinationLatitude": 52.1657,
+  "destinationLongitude": 20.9671,
+  "vehicleType": "Standard"
+}
+
+### Get passenger ride history
+GET {{baseUrl}}/api/public/rides?page=1&pageSize=10
+Authorization: Bearer {{passengerToken}}
+
+### Get single ride (passenger)
+GET {{baseUrl}}/api/public/rides/<ride-id>
+Authorization: Bearer {{passengerToken}}
+
+### Cancel a ride
+POST {{baseUrl}}/api/public/rides/<ride-id>/cancel
+Authorization: Bearer {{passengerToken}}
+
+### Download ride invoice (PDF)
+GET {{baseUrl}}/api/public/rides/<ride-id>/invoice
+Authorization: Bearer {{passengerToken}}
+
+### ── Vehicle system endpoints ─────────────────────────────────────────────
+
+### Start a ride (called by vehicle)
+POST {{baseUrl}}/api/vehicle/rides/<ride-id>/start
+X-Api-Key: {{vehicleApiKey}}
+
+### Complete a ride (called by vehicle)
+POST {{baseUrl}}/api/vehicle/rides/<ride-id>/complete
+X-Api-Key: {{vehicleApiKey}}
+Content-Type: application/json
+
+{
+  "distanceKm": 8.5,
+  "durationMinutes": 22
+}
+
+### ── Admin endpoints ──────────────────────────────────────────────────────
+
+### List all rides (admin)
+GET {{baseUrl}}/api/admin/rides?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Filter rides by status
+GET {{baseUrl}}/api/admin/rides?page=1&pageSize=20&status=Completed
+Authorization: Bearer {{adminToken}}
+
+### Get single ride (admin)
+GET {{baseUrl}}/api/admin/rides/<ride-id>
+Authorization: Bearer {{adminToken}}

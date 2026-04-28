@@ -77,6 +77,44 @@ public static class VehicleSystemEndpoints
             return Results.Ok(new { ride, payment });
         });
 
+        // GET /api/vehicle/rides/pending — rides the simulator needs to dispatch
+        group.MapGet("/rides/pending", async (IRideService rideService) =>
+        {
+            var requested = await rideService.GetAllAsync(1, 50, NovaDrive.Domain.Enums.RideStatus.Requested);
+            var enRoute   = await rideService.GetAllAsync(1, 50, NovaDrive.Domain.Enums.RideStatus.EnRoute);
+            return Results.Ok(new
+            {
+                requested = requested.Items
+                    .Where(r => r.VehicleId.HasValue)
+                    .Select(r => new {
+                        r.Id, r.VehicleId, r.RequestedAt,
+                        r.DepartureLatitude, r.DepartureLongitude,
+                        r.DestinationLatitude, r.DestinationLongitude,
+                    }),
+                enRoute = enRoute.Items
+                    .Select(r => new {
+                        r.Id, r.VehicleId, r.StartedAt,
+                        r.DepartureLatitude, r.DepartureLongitude,
+                        r.DestinationLatitude, r.DestinationLongitude,
+                    }),
+            });
+        });
+
+        // GET /api/vehicle/vehicles — list active vehicle IDs + coords for the simulator
+        group.MapGet("/vehicles", async (IVehicleService vehicleService) =>
+        {
+            var page = await vehicleService.GetAllAsync(1, 200);
+            var result = page.Items.Where(v => v.IsActive).Select(v => new
+            {
+                v.Id,
+                v.Model,
+                v.LicensePlate,
+                latitude  = v.CurrentLatitude  ?? 50.8218,
+                longitude = v.CurrentLongitude ?? 3.2458,
+            });
+            return Results.Ok(result);
+        });
+
         // Note: API key auth is handled by ApiKeyMiddleware
         return group.WithTags("Vehicle System");
     }

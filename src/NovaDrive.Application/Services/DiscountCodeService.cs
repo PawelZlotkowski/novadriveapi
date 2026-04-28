@@ -16,6 +16,7 @@ public interface IDiscountCodeService
     Task<DiscountCodeValidationResult> ValidateCodeAsync(string code, decimal currentRideValue);
     Task<PaginatedResponse<DiscountCodeResponse>> GetAllAsync(int page, int pageSize, bool? isActive = null);
     Task<DiscountCodeResponse> UpdateAsync(Guid id, CreateDiscountCodeRequest request);
+    Task<DiscountCodeResponse> SetActiveAsync(Guid id, bool isActive);
     Task DeleteAsync(Guid id);
 }
 
@@ -103,6 +104,15 @@ public class DiscountCodeService : IDiscountCodeService
         code.ExpiresAt = request.ExpiresAt;
         code.MaxUses = request.MaxUses;
 
+        await _discountCodeRepo.UpdateAsync(code);
+        return code.ToResponse();
+    }
+
+    public async Task<DiscountCodeResponse> SetActiveAsync(Guid id, bool isActive)
+    {
+        var code = await _discountCodeRepo.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"Discount code {id} not found");
+        code.IsActive = isActive;
         await _discountCodeRepo.UpdateAsync(code);
         return code.ToResponse();
     }

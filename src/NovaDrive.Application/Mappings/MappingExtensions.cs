@@ -45,7 +45,10 @@ public static class MappingExtensions
         r.Id, r.PassengerId,
         r.Passenger is not null ? $"{r.Passenger.FirstName} {r.Passenger.LastName}" : "",
         r.VehicleId, r.Vehicle?.Model, r.Vehicle?.LicensePlate,
-        r.DepartureAddress, r.DestinationAddress, r.Status.ToString(),
+        r.DepartureAddress, r.DepartureLatitude, r.DepartureLongitude,
+        r.DestinationAddress, r.DestinationLatitude, r.DestinationLongitude,
+        r.Vehicle?.VehicleType.ToString(),
+        r.Status.ToString(),
         r.RequestedAt, r.StartedAt, r.CompletedAt,
         r.DistanceKm, r.DurationMinutes, r.FinalPrice, r.VatAmount,
         r.DiscountCode?.Code);

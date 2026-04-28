@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:5050
+@bearerToken = <paste_admin_jwt_here>
+
+### List all vehicles (paginated)
+GET {{baseUrl}}/api/admin/vehicles?page=1&pageSize=20
+Authorization: Bearer {{bearerToken}}
+
+### List only active vehicles
+GET {{baseUrl}}/api/admin/vehicles?page=1&pageSize=20&isActive=true
+Authorization: Bearer {{bearerToken}}
+
+### Get single vehicle by ID
+GET {{baseUrl}}/api/admin/vehicles/<vehicle-id>
+Authorization: Bearer {{bearerToken}}
+
+### Create a new vehicle
+POST {{baseUrl}}/api/admin/vehicles
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "vin": "WD1ND99999",
+  "licensePlate": "WI 99999",
+  "model": "Tesla Model Y",
+  "vehicleType": "Standard",
+  "yearOfManufacture": 2024,
+  "isActive": true,
+  "currentLatitude": 52.2297,
+  "currentLongitude": 21.0122
+}
+
+### Update a vehicle
+PUT {{baseUrl}}/api/admin/vehicles/<vehicle-id>
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "model": "Tesla Model Y Long Range",
+  "isActive": true,
+  "currentLatitude": 52.2297,
+  "currentLongitude": 21.0122
+}
+
+### Toggle vehicle active status
+PATCH {{baseUrl}}/api/admin/vehicles/<vehicle-id>/status
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### Delete a vehicle
+DELETE {{baseUrl}}/api/admin/vehicles/<vehicle-id>
+Authorization: Bearer {{bearerToken}}

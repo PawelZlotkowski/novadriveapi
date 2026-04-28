@@ -29,6 +29,9 @@ public static class AdminDiscountCodeEndpoints
         group.MapPut("/{id:guid}", async (Guid id, CreateDiscountCodeRequest request, IDiscountCodeService service) =>
             Results.Ok(await service.UpdateAsync(id, request)));
 
+        group.MapPatch("/{id:guid}/status", async (Guid id, SetActiveRequest request, IDiscountCodeService service) =>
+            Results.Ok(await service.SetActiveAsync(id, request.IsActive)));
+
         group.MapDelete("/{id:guid}", async (Guid id, IDiscountCodeService service) =>
         {
             await service.DeleteAsync(id);
@@ -38,3 +41,5 @@ public static class AdminDiscountCodeEndpoints
         return group.RequireAuthorization("AdminPolicy").WithTags("Admin - Discount Codes");
     }
 }
+
+record SetActiveRequest(bool IsActive);

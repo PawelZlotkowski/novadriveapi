@@ -250,6 +250,10 @@ public class RideService : IRideService
 
         await _rideRepository.UpdateAsync(ride);
 
+        // Update vehicle mileage
+        if (ride.VehicleId.HasValue && request.DistanceKm > 0)
+            await _vehicleRepository.AddMileageAsync(ride.VehicleId.Value, request.DistanceKm);
+
         // Increment discount code usage
         if (ride.DiscountCodeId.HasValue && discountCodeInfo is not null)
             await _discountCodeRepository.IncrementUsageAsync(ride.DiscountCodeId.Value);

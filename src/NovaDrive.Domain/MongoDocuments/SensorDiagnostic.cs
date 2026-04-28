@@ -5,7 +5,7 @@ using System.Text.Json;
 
 public class SensorDiagnostic
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     public string VehicleId { get; set; } = string.Empty;
     public string SensorType { get; set; } = string.Empty;   // "Lidar", "Radar", "Camera"
     public string ErrorCode { get; set; } = string.Empty;

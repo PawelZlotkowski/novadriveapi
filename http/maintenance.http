@@ -1,0 +1,24 @@
+@baseUrl = http://localhost:5050
+@adminToken = <paste_admin_jwt_here>
+
+### List all maintenance logs
+GET {{baseUrl}}/api/admin/maintenance?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Get single maintenance log
+GET {{baseUrl}}/api/admin/maintenance/<log-id>
+Authorization: Bearer {{adminToken}}
+
+### Create a maintenance log
+POST {{baseUrl}}/api/admin/maintenance
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "vehicleId": "<vehicle-id>",
+  "serviceDate": "2026-04-28T09:00:00Z",
+  "description": "Annual inspection + brake check",
+  "technicianName": "Jan Kowalski",
+  "cost": 280.00,
+  "nextServiceMileage": 50000
+}

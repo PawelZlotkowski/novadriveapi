@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:5050
+@bearerToken = <paste_jwt_from_auth0_here>
+
+### Sync Auth0 user to local DB (call after Auth0 login)
+POST {{baseUrl}}/api/public/auth/sync
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+### Get current authenticated user profile
+GET {{baseUrl}}/api/public/auth/me
+Authorization: Bearer {{bearerToken}}

@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:5050
+@adminToken = <paste_admin_jwt_here>
+@passengerToken = <paste_passenger_jwt_here>
+
+### ── Passenger (self-service) ────────────────────────────────────────────
+
+### Get own profile
+GET {{baseUrl}}/api/public/passengers/me
+Authorization: Bearer {{passengerToken}}
+
+### Update own profile
+PATCH {{baseUrl}}/api/public/passengers/me
+Authorization: Bearer {{passengerToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Anna",
+  "lastName": "Kowalska",
+  "homeAddress": "ul. Nowy Świat 1, Warszawa",
+  "preferredPaymentMethod": "CreditCard"
+}
+
+### Get loyalty points balance
+GET {{baseUrl}}/api/public/passengers/me/loyalty-points
+Authorization: Bearer {{passengerToken}}
+
+### ── Admin ────────────────────────────────────────────────────────────────
+
+### List all passengers
+GET {{baseUrl}}/api/admin/passengers?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Get single passenger
+GET {{baseUrl}}/api/admin/passengers/<passenger-id>
+Authorization: Bearer {{adminToken}}

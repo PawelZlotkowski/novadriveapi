@@ -1,0 +1,55 @@
+@baseUrl = http://localhost:5050
+@adminToken = <paste_admin_jwt_here>
+@passengerToken = <paste_passenger_jwt_here>
+
+### ── Admin ───────────────────────────────────────────────────────────────
+
+### List all discount codes
+GET {{baseUrl}}/api/admin/discount-codes?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### Get single discount code
+GET {{baseUrl}}/api/admin/discount-codes/<code-id>
+Authorization: Bearer {{adminToken}}
+
+### Create a percentage discount code
+POST {{baseUrl}}/api/admin/discount-codes
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "code": "EXAM20",
+  "type": "Percentage",
+  "value": 20,
+  "minimumRideValue": 15.00,
+  "expiresAt": "2026-12-31T23:59:59Z",
+  "maxUses": 100
+}
+
+### Create a flat discount code
+POST {{baseUrl}}/api/admin/discount-codes
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "code": "FLAT5",
+  "type": "Flat",
+  "value": 5.00,
+  "minimumRideValue": 20.00,
+  "expiresAt": "2026-06-30T23:59:59Z",
+  "maxUses": 50
+}
+
+### Delete a discount code
+DELETE {{baseUrl}}/api/admin/discount-codes/<code-id>
+Authorization: Bearer {{adminToken}}
+
+### ── Passenger ────────────────────────────────────────────────────────────
+
+### Validate a discount code before booking
+GET {{baseUrl}}/api/public/discount-codes/WELCOME20/validate
+Authorization: Bearer {{passengerToken}}
+
+### Validate an expired code (expect invalid)
+GET {{baseUrl}}/api/public/discount-codes/EXPIRED10/validate
+Authorization: Bearer {{passengerToken}}
