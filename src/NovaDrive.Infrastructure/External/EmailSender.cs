@@ -25,7 +25,7 @@ public class EmailSender : IEmailService
         var smtpSettings = _configuration.GetSection("Smtp");
 
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("Nova Drive", smtpSettings["From"]));
+        message.From.Add(new MailboxAddress("Nova Drive", smtpSettings["From"] ?? "noreply@novadrive.com"));
         message.To.Add(new MailboxAddress("", to));
         message.Subject = subject;
 
