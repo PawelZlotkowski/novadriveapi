@@ -55,10 +55,10 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Unit Tests
-        run: dotnet test tests/NovaDrive.UnitTests/NovaDrive.UnitTests.csproj --no-build --configuration Release --logger "github;verbosity=normal"
+        run: dotnet test tests/NovaDrive.UnitTests/NovaDrive.UnitTests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
 
       - name: Integration Tests
-        run: dotnet test tests/NovaDrive.IntegrationTests/NovaDrive.IntegrationTests.csproj --no-build --configuration Release --logger "github;verbosity=normal"
+        run: dotnet test tests/NovaDrive.IntegrationTests/NovaDrive.IntegrationTests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
         env:
           # Testcontainers manages its own containers; these are unused but documented
           TEST_POSTGRES_PORT: 5432
