@@ -7,7 +7,6 @@ WORKDIR /src
 COPY NovaDrive.Domain/NovaDrive.Domain.csproj             NovaDrive.Domain/
 COPY NovaDrive.Application/NovaDrive.Application.csproj   NovaDrive.Application/
 COPY NovaDrive.Infrastructure/NovaDrive.Infrastructure.csproj NovaDrive.Infrastructure/
-COPY NovaDrive.GraphQL/NovaDrive.GraphQL.csproj           NovaDrive.GraphQL/
 COPY NovaDrive.Api/NovaDrive.Api.csproj                   NovaDrive.Api/
 RUN dotnet restore NovaDrive.Api/NovaDrive.Api.csproj \
       --locked-mode 2>/dev/null || dotnet restore NovaDrive.Api/NovaDrive.Api.csproj
