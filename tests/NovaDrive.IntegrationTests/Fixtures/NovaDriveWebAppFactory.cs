@@ -32,22 +32,11 @@ public class NovaDriveWebAppFactory : WebApplicationFactory<Program>, IAsyncLife
                 options.UseNpgsql(_postgres.ConnectionString));
 
             // ── Replace JWT authentication with test scheme ─────────────────
-            // Remove all existing authentication registrations
-            var authDescriptors = services
-                .Where(d => d.ServiceType == typeof(IAuthenticationSchemeProvider)
-                         || d.ServiceType == typeof(IAuthenticationHandlerProvider)
-                         || d.ServiceType == typeof(IAuthenticationService))
-                .ToList();
-
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                     TestAuthHandler.SchemeName, _ => { });
 
-            // ── Ensure database schema is created ───────────────────────────
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<NovaDriveDbContext>();
-            db.Database.EnsureCreated();
+            // Schema is created by MigrateAsync() in Program.cs startup — no EnsureCreated needed.
         });
 
         // Override MongoDB connection string via configuration
