@@ -4,6 +4,7 @@ namespace NovaDrive.Api.Middleware;
 using System.Net;
 using System.Text.Json;
 using NovaDrive.Application.DTOs;
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 public class ExceptionHandlingMiddleware
 {
