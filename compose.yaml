@@ -117,7 +117,7 @@ services:
   # ── Admin Dashboard (nginx) ───────────────────────────────────────────────
   nova-admin:
     build:
-      context: ./dotnet-handoff/client
+      context: ./frontend/client
       dockerfile: Dockerfile.admin
       args:
         VITE_API_BASE_URL:          ""
@@ -140,7 +140,7 @@ services:
   # ── Passenger App (nginx) ─────────────────────────────────────────────────
   nova-passenger:
     build:
-      context: ./dotnet-handoff/client
+      context: ./frontend/client
       dockerfile: Dockerfile.passenger
       args:
         VITE_API_BASE_URL:              ""
