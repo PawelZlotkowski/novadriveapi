@@ -15,7 +15,7 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: novadrive-postgres
-    env_file: ./src/.env
+    env_file: ./.env
     environment:
       POSTGRES_DB:       novadrive
       POSTGRES_USER:     novadrive
@@ -68,7 +68,7 @@ services:
     container_name: novadrive-api
     ports:
       - "5050:8080"   # API → http://localhost:5050
-    env_file: ./src/.env
+    env_file: ./.env
     environment:
       ASPNETCORE_ENVIRONMENT:        Development
       ASPNETCORE_URLS:               http://+:8080
